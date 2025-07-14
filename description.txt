@@ -1,0 +1,291 @@
+TODO-
+
+How to Enable Email Delivery
+Install nodemailer (if not already):
+Apply to contact.js
+Set environment variables in .env.local:
+Apply to contact.js
+For Gmail, you must use an App Password if 2FA is enabled.
+Restart your dev server after setting env vars.
+4. How to Link the Contact Page
+Add a link to /contact in your Navbar for easy access.
+
+
+
+
+
+
+
+
+create next app - Project Overview
+
+A Next.js app where users can:
+
+Sign up / log in (MongoDB Atlas, no JWT/bcrypt)
+
+Upload one or many screenshots (Cloudinary)
+
+AI analyzes images and generates descriptions (Gemini Flash)
+
+Images are organized into custom folders (Cloudinary & frontend)
+
+User dashboard: view uploads, AI info, categories, descriptions
+
+Images auto-delete after 3 days, or user can download them
+
+
+
+
+
+Tech Stack
+
+Frontend: Next.js (React)
+
+Backend/API: Next.js API routes (or separate Node.js/Express if needed)
+
+Database: MongoDB Atlas (for users, uploads, metadata)
+
+Image Storage: Cloudinary
+
+AI Analysis: Gemini Flash API (Google)
+
+Auth: Simple session/cookie-based (no JWT/bcrypt)
+
+Scheduler: For auto-delete (Cloudinary API + backend cron or Cloudinary TTL)
+
+
+
+
+
+Step-by-Step Plan
+
+1. Project Setup
+
+Create a new Next.js app (npx create-next-app@latest)
+
+Install dependencies: mongodb, cloudinary, cookie-session (or similar), axios (for Gemini API), etc.
+
+2. User Authentication
+
+Signup/Login:
+
+Store users in MongoDB (username, email, password in plain text for demo, but warn users this is insecure for real apps)
+
+Use session cookies for login state (no JWT/bcrypt)
+
+Implement signup, login, logout API routes
+
+3. Image Upload
+
+Integrate Cloudinary upload widget or custom upload via API
+
+Allow multiple image uploads
+
+Store image URLs, upload date, user ID, and folder/category in MongoDB
+
+4. AI Analysis
+
+On upload, send image to Gemini Flash API
+
+Store AI-generated description in MongoDB with image metadata
+
+5. Custom Folders & Categories
+
+Let users create/select folders/categories (store in MongoDB and Cloudinary)
+
+Organize images accordingly
+
+6. User Dashboard
+
+Show user’s uploads, AI info, categories, descriptions
+
+Allow download of images
+
+Show time left before auto-delete
+
+7. Auto-Delete Images
+
+Use Cloudinary’s TTL (Time To Live) or a backend cron job to delete images after 3 days
+
+Remove metadata from MongoDB as well ,
+
+
+
+8. protect the route , user see omly home page without login - and other routes protected without login not allow , like dashboad , uploads , and other navbar items
+
+
+
+
+
+
+
+
+
+snapeek/
+│
+├── node_modules/
+├── public/
+│   └── (static assets, favicon, etc.)
+├── src/
+│   ├── components/
+│   │   ├── Auth/
+│   │   │   ├── LoginForm.js
+│   │   │   └── RegisterForm.js
+│   │   ├── Dashboard/
+│   │   │   ├── ImageCard.js
+│   │   │   └── FolderList.js
+│   │   ├── Navbar.js
+│   │   ├── ProtectedRoute.js
+│   │   └── ... (other UI components)
+│   ├── lib/
+│   │   ├── mongodb.js           # MongoDB connection helper
+│   │   ├── cloudinary.js        # Cloudinary config/helper
+│   │   ├── gemini.js            # Gemini Flash API helper
+│   │   └── session.js           # Session/cookie helpers
+│   ├── models/
+│   │   ├── User.js
+│   │   ├── Image.js
+│   │   └── Folder.js
+│   ├── pages/
+│   │   ├── api/
+│   │   │   ├── auth/
+│   │   │   │   ├── login.js
+│   │   │   │   ├── logout.js
+│   │   │   │   └── register.js
+│   │   │   ├── images/
+│   │   │   │   ├── index.js         # GET/POST images
+│   │   │   │   └── [id].js          # GET/DELETE single image
+│   │   │   ├── folders/
+│   │   │   │   ├── index.js         # GET/POST folders
+│   │   │   │   └── [id].js          # GET/DELETE folder
+│   │   │   └── ai/
+│   │   │       └── analyze.js       # Gemini Flash API endpoint
+│   │   ├── _app.js
+│   │   ├── index.js                 # Home page (public)
+│   │   ├── dashboard.js             # User dashboard (protected)
+│   │   ├── upload.js                # Upload page (protected)
+│   │   ├── login.js                 # Login page
+│   │   ├── register.js              # Register page
+│   │   └── ... (other pages)
+│   ├── styles/
+│   │   ├── globals.css
+│   │   └── ... (other CSS files)
+│   └── utils/
+│       └── autoDelete.js            # Cron/TTL logic for auto-delete
+├── .env.local                       # Environment variables (MongoDB, Cloudinary, Gemini, etc.)
+├── package.json
+├── package-lock.json
+├── jsconfig.json
+├── README.md
+└── ... (other config files)
+
+
+cloudinary structure will follow 
+  snapeek/
+    user@email.com/
+      coding/
+        image1.jpg
+      resume/
+        image2.jpg
+      food/
+        image3.jpg
+
+        The backend moves the image to the AI-named folder in Cloudinary (creating it if needed).
+The dashboard groups and displays images by the folder (AI category).
+
+
+
+
+
+
+------------------------Backend---------------------------------------------
+
+ok. almost done. so not i want to create backend part and give me folder structture , on the basis on this frontend code - in backend i want that make server that run localy in pc , where i want user fill the own login password that register in frontend website "Snapeek" and user login - when user login all  uploaded image download autometicalyy with thier description in user system. and also add dashboard to see user own uploadded images locaaly  on local server like localhost:3000, basically i want that connect the Snapeek with local server means user can download own data after login that uploaded in snapeel.
+
+
+
+snapeek-local-backend/
+│
+├── .env                  # Local environment variables (MongoDB, Cloudinary, etc.)
+├── package.json
+├── package-lock.json
+├── README.md
+│
+├── src/
+│   ├── server.js         # Main Express/Fastify server entry point
+│   ├── config/
+│   │   ├── db.js         # MongoDB connection helper
+│   │   └── cloudinary.js # Cloudinary config
+│   ├── routes/
+│   │   ├── auth.js       # Login route (POST /api/login)
+│   │   ├── images.js     # Download images, serve dashboard (GET /api/images, /dashboard)
+│   ├── controllers/
+│   │   ├── authController.js
+│   │   └── imageController.js
+│   ├── models/
+│   │   ├── User.js       # (Schema for user, if using Mongoose)
+│   │   └── Image.js      # (Schema for image, if using Mongoose)
+│   ├── utils/
+│   │   ├── downloadImage.js # Helper to download images from Cloudinary
+│   │   └── fileUtils.js     # Helpers for local file management
+│   ├── views/
+│   │   └── dashboard.ejs # (or pug, or use React for local dashboard UI)
+│   └── public/
+│       └── images/       # Downloaded images stored here, organized by user/folder
+│
+└── ...
+
+MONGODB_URI=your_mongodb_atlas_uri
+CLOUDINARY_CLOUD_NAME=your_cloud_name
+CLOUDINARY_API_KEY=your_api_key
+CLOUDINARY_API_SECRET=your_api_secret
+SESSION_SECRET=your_local_secret
+
+Great! Here’s a plan and folder structure for your backend that will connect with your existing Snapeek frontend, allow users to log in with their Snapeek credentials, and download all their uploaded images (with descriptions) to their local system. It will also provide a local dashboard to view these images at localhost:3000.
+1. Backend Overview
+Runs locally (Node.js/Express, or Fastify, etc.)
+Connects to the same MongoDB Atlas as your frontend (to access users/images)
+Authenticates users with the same credentials as Snapeek (plain text password, for demo)
+Downloads images from Cloudinary to the local filesystem after login
+Saves image metadata (description, folder, etc.) locally (e.g., as JSON or in a local DB)
+Provides a local dashboard (simple web UI) to view/download images/descriptions
+2. Recommended Folder Structure
+Apply to description....
+3. Key Features & Flow
+A. User Login
+User visits localhost:3000/login
+Enters their Snapeek credentials (same as frontend)
+Backend checks credentials against MongoDB Atlas
+B. Download Images
+On successful login, backend fetches all images for the user from MongoDB
+Downloads each image from Cloudinary to public/images/{user_email}/{folder}/
+Saves a JSON file with image metadata (description, folder, etc.)
+C. Local Dashboard
+User can visit localhost:3000/dashboard
+See a gallery of their downloaded images, with descriptions and folders
+Option to re-download/sync with Snapeek cloud
+4. Tech Stack
+Node.js (Express or Fastify)
+MongoDB (connect to same Atlas as frontend)
+Cloudinary (for image download)
+EJS/Pug/React (for local dashboard UI)
+Multer (if you want to support local uploads)
+dotenv (for config)
+5. Example .env
+Apply to description....
+6. How It Connects to Snapeek
+Uses the same MongoDB Atlas for user and image data
+Uses the same Cloudinary for image storage
+Authenticates with the same credentials (plain text, for demo)
+Downloads images and metadata for the logged-in user
+7. Next Steps
+Scaffold the backend project with the above structure
+Implement login route and session management
+Implement image download logic (Cloudinary → local disk)
+Implement a simple dashboard UI to view images/descriptions
+8. Optional Enhancements
+Add a "Sync" button to re-download new images
+Allow user to delete local images
+Support for multiple users on the same local server
+Would you like a starter codebase for this backend, or a specific example of the login/download logic?
+Let me know how deep you want to go!
