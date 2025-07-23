@@ -2,7 +2,7 @@ import cloudinary from '../../../components/lib/cloudinary';
 import clientPromise from '../../../components/lib/mongodb';
 import Image from '../../../components/models/Image';
 import { getSession } from '../../../components/lib/session';
-import { analyzeImageWithGemini } from '../../../components/lib/gemini';
+import { analyzeImageWithGemini, generateStudyNotes } from '../../../components/lib/gemini';
 import { useMemo } from 'react';
 
 export const config = {
@@ -18,7 +18,7 @@ export default async function handler(req, res) {
   if (!session) return res.status(401).json({ error: 'Not authenticated' });
 
   if (req.method === 'POST') {
-    const { imageBase64 } = req.body;
+    const { imageBase64, makeNotesForStudy } = req.body;
     if (!imageBase64) {
       return res.status(400).json({ error: 'No image provided' });
     }
@@ -80,7 +80,19 @@ export default async function handler(req, res) {
         }
       }
 
-      // 4. Save metadata to MongoDB
+      // 4. Generate study notes if requested
+      let studyNotes = null;
+      if (makeNotesForStudy) {
+        try {
+          const notesResult = await generateStudyNotes(finalUrl, description);
+          studyNotes = notesResult;
+        } catch (e) {
+          console.error('Notes generation error:', e);
+          // Continue without notes if generation fails
+        }
+      }
+
+      // 5. Save metadata to MongoDB
       const db = (await clientPromise).db();
       const imageDoc = new Image({
         url: finalUrl,
@@ -91,7 +103,23 @@ export default async function handler(req, res) {
         createdAt: new Date(),
       });
       await db.collection('images').insertOne(imageDoc);
-      return res.status(201).json({ image: imageDoc });
+
+      // 6. Save study notes if generated
+      if (Array.isArray(studyNotes) && studyNotes.length > 0 && makeNotesForStudy) {
+        const notesToInsert = studyNotes.map(note => ({
+          userId: session.email,
+          imageId: imageDoc._id,
+          imageUrl: finalUrl,
+          noteContent: note.noteContent,
+          noteType: 'study_summary',
+          subject: note.subject || category, // Use subject from note, fallback to image category
+          createdAt: new Date(),
+          lastModified: new Date()
+        }));
+        await db.collection('notes').insertMany(notesToInsert);
+      }
+
+      return res.status(201).json({ image: imageDoc, studyNotes });
     } catch (err) {
       return res.status(500).json({ error: 'Cloudinary upload failed', details: err.message });
     }

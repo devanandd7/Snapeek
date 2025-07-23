@@ -34,6 +34,7 @@ export default function Navbar() {
     ...(user ? [
       { href: '/dashboard', label: 'Dashboard' },
       { href: '/upload', label: 'Upload' },
+      { href: '/notes', label: 'Notes' },
     ] : [
       { href: '/login', label: 'Login' },
       { href: '/register', label: 'Register' },

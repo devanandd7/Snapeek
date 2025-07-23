@@ -18,6 +18,8 @@ export default function UploadPage() {
   const [error, setError] = useState('');
   const [uploading, setUploading] = useState(false);
   const [images, setImages] = useState([]);
+  const [makeNotesForStudy, setMakeNotesForStudy] = useState(false);
+  const [openDropdowns, setOpenDropdowns] = useState({});
 
   // Restore queue from localStorage on mount
   useEffect(() => {
@@ -111,7 +113,10 @@ export default function UploadPage() {
         const res = await fetch('/api/images/Img_index', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ imageBase64 }),
+          body: JSON.stringify({ 
+            imageBase64,
+            makeNotesForStudy: makeNotesForStudy 
+          }),
         });
         const data = await res.json();
         if (res.ok) {
@@ -144,6 +149,33 @@ export default function UploadPage() {
   // Remove file from queue
   function removeFile(idx) {
     setFiles(files => files.filter((_, i) => i !== idx));
+  }
+
+  // Handle AI analysis for uploaded images
+  async function handleAnalyzeAI(imageId) {
+    try {
+      const res = await fetch('/api/ai/analyze', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ imageId }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        // Update the image in files state with new description
+        setFiles(prevFiles => 
+          prevFiles.map(f => 
+            f.uploadedImage && f.uploadedImage._id === imageId 
+              ? { ...f, uploadedImage: { ...f.uploadedImage, description: data.description } }
+              : f
+          )
+        );
+        setMessage('AI analysis completed!');
+      } else {
+        setError(data.error || 'AI analysis failed');
+      }
+    } catch (err) {
+      setError('Failed to analyze image with AI');
+    }
   }
 
   return (
@@ -180,6 +212,21 @@ export default function UploadPage() {
               </p>
             )}
             <p className="text-xs text-gray-500 mt-2">You can select multiple images. JPG, PNG, GIF supported.</p>
+          </div>
+          
+          {/* Notes Feature Checkbox */}
+          <div className="flex items-center gap-3 mt-4 p-4 bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20 rounded-xl border border-purple-200 dark:border-purple-700">
+            <input
+              type="checkbox"
+              id="makeNotesForStudy"
+              checked={makeNotesForStudy}
+              onChange={(e) => setMakeNotesForStudy(e.target.checked)}
+              className="w-5 h-5 text-purple-600 bg-gray-100 border-gray-300 rounded focus:ring-purple-500 dark:focus:ring-purple-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+            />
+            <label htmlFor="makeNotesForStudy" className="flex flex-col cursor-pointer">
+              <span className="text-sm font-semibold text-purple-700 dark:text-purple-300">📚 Generate Study Notes</span>
+              <span className="text-xs text-gray-600 dark:text-gray-400">AI will create handwritten-style study notes from your images</span>
+            </label>
           </div>
           {files.length > 0 && (
             <div className="flex flex-wrap gap-4 mt-2 items-center justify-center w-full">
@@ -242,11 +289,15 @@ export default function UploadPage() {
         <hr className="my-10" />
         <h2 className="text-2xl font-bold mb-4 text-center text-blue-700">Uploaded Images</h2>
         <div className="flex flex-wrap gap-6 justify-center">
+          {/* Only show uploaded images from current session */}
           {files.filter(f => f.status === 'done' && f.uploadedImage).map(f => (
-            <ImageCard key={f.uploadedImage.public_id} img={f.uploadedImage} />
-          ))}
-          {images.map(img => (
-            <ImageCard key={img.public_id} img={img} />
+            <ImageCard 
+              key={f.uploadedImage.public_id} 
+              img={f.uploadedImage}
+              onToggleDropdown={(id) => setOpenDropdowns(prev => ({...prev, [id]: !prev[id]}))}
+              isDropdownOpen={openDropdowns[f.uploadedImage.public_id] || false}
+              onAnalyzeAI={handleAnalyzeAI}
+            />
           ))}
         </div>
       </main>
