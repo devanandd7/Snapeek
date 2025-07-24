@@ -140,3 +140,16 @@ Part 3: Interview Preparation Guide
 **Q5: The Notes page was initially slow to load. How did you diagnose and fix this performance issue?**
 
 *A:* "The initial user feedback was that the Notes page felt sluggish. The root cause was that the user saw a blank page or a simple 'Loading...' text while the data was being fetched from the backend. This is a poor user experience. To fix this, I implemented a 'skeleton loader'. When the page loads, instead of a blank screen, it immediately displays a grid of greyed-out, mock-up note cards. This provides an immediate visual response, giving the illusion of speed and showing the user what the page layout will look like. Once the actual note data arrives from the API, the skeleton cards are seamlessly replaced with the real content. This technique significantly improves the *perceived performance* without changing the actual data-fetching time."
+
+### 3.3 Notable Development Challenges
+
+**Challenge: Mobile Client-Side Exception on Note Rendering**
+
+*   **Problem:** A critical bug was discovered where opening a note on a mobile device would cause the application to crash with a client-side exception. This error did not occur on desktop browsers, making it difficult to debug.
+
+*   **Investigation:** The root cause was identified as a **hydration error** related to components that are not compatible with Next.js's Server-Side Rendering (SSR). Specifically, the `react-mermaid2` library, used for rendering diagrams, manipulates the DOM directly and relies on browser-specific APIs that are not available on the server. When Next.js tried to hydrate the server-rendered HTML on the client, the mismatch caused the application to fail.
+
+*   **Solution:** The fix was to ensure that any component using browser-dependent libraries is rendered exclusively on the client side. This was achieved by:
+    1.  **Creating a dedicated component** (`NoteContentRenderer.js`) to encapsulate all complex rendering logic, including markdown and Mermaid diagrams.
+    2.  **Using `next/dynamic`** to import this new component with SSR disabled: `dynamic(() => import('../components/NoteContentRenderer'), { ssr: false })`.
+    3.  This approach ensures the component and its dependencies (like `react-mermaid2`) are never executed on the server, preventing the hydration mismatch and resolving the crash on all devices. This is a standard pattern for integrating client-only libraries into a Next.js application.
