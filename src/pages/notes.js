@@ -348,8 +348,11 @@ export default function NotesPage() {
           </div>
         </div>
 
-        {/* Notes Grid */}
-        {loading ? (
+        {/* Client-side Render Guard */}
+      {isClient && (
+        <>
+          {/* Notes Grid */}
+          {loading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {Array.from({ length: 6 }).map((_, index) => (
               <NoteCardSkeleton key={index} />
@@ -434,6 +437,8 @@ export default function NotesPage() {
             fontStyleClass={fontStyleClass}
           />
         )}
+        </>
+      )}
       </main>
 
       {/* Handwritten Font Styles */}
