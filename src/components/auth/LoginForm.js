@@ -1,6 +1,7 @@
 import { useState } from 'react';
+import { Loader2 } from 'lucide-react';
 
-export default function LoginForm({ onSubmit, error }) {
+export default function LoginForm({ onSubmit, error, loading }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
@@ -33,7 +34,20 @@ export default function LoginForm({ onSubmit, error }) {
           required
         />
       </label>
-      <button type="submit" className="mt-2 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 font-semibold">Login</button>
+      <button 
+        type="submit" 
+        className="mt-2 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 font-semibold flex items-center justify-center disabled:opacity-60 disabled:cursor-not-allowed"
+        disabled={loading}
+      >
+        {loading ? (
+          <>
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            Logging in...
+          </>
+        ) : (
+          'Login'
+        )}
+      </button>
     </form>
   );
 }

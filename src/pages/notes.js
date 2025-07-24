@@ -8,6 +8,7 @@ import Head from 'next/head';
 import dynamic from 'next/dynamic';
 import { PDFDownloadLink } from '@react-pdf/renderer';
 import NotePDF from '../components/NotePDF';
+import NoteCardSkeleton from '../components/NoteCardSkeleton';
 
 // Dynamically import Mermaid to avoid SSR issues
 const Mermaid = dynamic(() => import('react-mermaid2'), { ssr: false });
@@ -348,18 +349,19 @@ export default function NotesPage() {
         </div>
 
         {/* Notes Grid */}
-        {filteredNotes.length === 0 ? (
-          <div className="text-center py-16">
-            <BookOpen className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-xl font-semibold text-gray-600 dark:text-gray-400 mb-2">
-              {notes.length === 0 ? 'No study notes yet' : 'No notes match your search'}
-            </h3>
-            <p className="text-gray-500 dark:text-gray-500">
-              {notes.length === 0 
-                ? 'Upload images with "Generate Study Notes" checked to create your first notes!'
-                : 'Try adjusting your search or filter criteria'
-              }
-            </p>
+        {loading ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {Array.from({ length: 6 }).map((_, index) => (
+              <NoteCardSkeleton key={index} />
+            ))}
+          </div>
+        ) : error ? (
+          <p className="text-center text-red-500">{error}</p>
+        ) : filteredNotes.length === 0 ? (
+          <div className="text-center py-12">
+            <BookOpen className="mx-auto h-12 w-12 text-gray-400" />
+            <h3 className="mt-2 text-lg font-medium text-gray-900 dark:text-white">No notes found</h3>
+            <p className="mt-1 text-sm text-gray-500">Try adjusting your search or filter, or create a new note!</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
