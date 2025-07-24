@@ -1,13 +1,13 @@
 import React from 'react';
+import ReactMarkdown from 'react-markdown';
 import { useEffect, useState, useRef } from 'react';
 import Navbar from '../components/Navbar';
 import ChatBox from '../components/ChatBox';
-import { BookOpen, Calendar, Search, Filter, Eye, Download, Type, FileText, Palette, GitBranch, Workflow, Sparkles, X } from 'lucide-react';
+import { BookOpen, Calendar, Search, Filter, Eye, Download, Type, FileText, Palette, GitBranch, Workflow, Sparkles, X, Trash2 } from 'lucide-react';
 import Head from 'next/head';
 import dynamic from 'next/dynamic';
-import jsPDF from 'jspdf';
-import html2canvas from 'html2canvas-pro';
-
+import { PDFDownloadLink } from '@react-pdf/renderer';
+import NotePDF from '../components/NotePDF';
 
 // Dynamically import Mermaid to avoid SSR issues
 const Mermaid = dynamic(() => import('react-mermaid2'), { ssr: false });
@@ -25,6 +25,7 @@ export default function NotesPage() {
   const [showDiagrams, setShowDiagrams] = useState(true);
   const [isLightboxOpen, setLightboxOpen] = useState(false);
   const [updateStatus, setUpdateStatus] = useState('');
+  const [isClient, setIsClient] = useState(false);
 
   const handleNoteUpdate = (newContent) => {
     if (selectedNote) {
@@ -37,7 +38,32 @@ export default function NotesPage() {
     }
   };
 
+  const handleDelete = async (noteId) => {
+    if (window.confirm('Are you sure you want to delete this note permanently?')) {
+      try {
+        const res = await fetch('/api/notes', {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ noteId }),
+        });
+
+        if (!res.ok) {
+          const errorData = await res.json();
+          throw new Error(errorData.error || 'Failed to delete note');
+        }
+
+        setNotes(notes.filter(n => n._id !== noteId));
+        if (selectedNote && selectedNote._id === noteId) {
+          setSelectedNote(null);
+        }
+      } catch (error) {
+        console.error('Delete error:', error);
+      }
+    }
+  };
+
   useEffect(() => {
+    setIsClient(true);
     fetchNotes();
   }, []);
 
@@ -74,6 +100,9 @@ export default function NotesPage() {
     { value: 'lined', label: 'Lined Paper', class: 'bg-lined-paper dark:bg-lined-paper-dark' },
     { value: 'grid', label: 'Grid Paper', class: 'bg-grid-paper dark:bg-grid-paper-dark' }
   ];
+
+  // Filter notes based on search and subject
+    const fontStyleClass = fontOptions.find(f => f.value === fontStyle)?.class || 'font-system';
 
   // Filter notes based on search and subject
   const filteredNotes = notes.filter(note => {
@@ -117,51 +146,6 @@ export default function NotesPage() {
   }
 
   // Download note as text file
-  const downloadPdf = async (note) => {
-    const imageContainer = document.getElementById(`pdf-image-container-${note._id}`);
-    if (!imageContainer) {
-      console.error('PDF image container not found.');
-      return;
-    }
-
-    try {
-      const pdf = new jsPDF({ orientation: 'p', unit: 'mm', format: 'a4' });
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const margin = 15;
-      let yPosition = margin;
-
-      // 1. Add the main image
-      const imageCanvas = await html2canvas(imageContainer, { useCORS: true, scale: 2 });
-      const imageData = imageCanvas.toDataURL('image/png');
-      const imgProps = pdf.getImageProperties(imageData);
-      const imgHeight = (imgProps.height * (pdfWidth - margin * 2)) / imgProps.width;
-      pdf.addImage(imageData, 'PNG', margin, yPosition, pdfWidth - margin * 2, imgHeight);
-      yPosition += imgHeight + 10; // Add space after the image
-
-      // 2. Prepare and add the text content
-      // Strip out Mermaid blocks as they cannot be rendered as plain text
-      const plainText = note.noteContent.replace(/<MERMAID>[\s\S]*?<\/MERMAID>/g, '').trim();
-      
-      pdf.setFontSize(12);
-      const textLines = pdf.splitTextToSize(plainText, pdfWidth - margin * 2);
-      
-      pdf.text(textLines, margin, yPosition);
-
-      // 3. Add footer to the last page
-      const pageCount = pdf.internal.getNumberOfPages();
-      pdf.setPage(pageCount);
-      const pdfHeight = pdf.internal.pageSize.getHeight();
-      pdf.setFontSize(10);
-      pdf.text('Downloaded from Snapeek', pdfWidth / 2, pdfHeight - 5, { align: 'center' });
-
-      // 4. Save the PDF
-      pdf.save(`${note.subject.replace(/ /g, '_')}.pdf`);
-
-    } catch (error) {
-      console.error('Failed to generate PDF:', error);
-    }
-  };
-
   function downloadNote(note) {
     const element = document.createElement('a');
     const file = new Blob([note.noteContent], { type: 'text/plain' });
@@ -172,7 +156,7 @@ export default function NotesPage() {
     document.body.removeChild(element);
   }
 
-  const NoteModal = ({ note, onClose, onUpdate, downloadNote, fontStyle, paperStyle, renderNoteContent }) => {
+  const NoteModal = ({ note, onClose, onUpdate, downloadNote, fontStyle, paperStyle, fontStyleClass, renderNoteContent }) => {
     const [isChatOpen, setIsChatOpen] = React.useState(false);
 
     if (!note) return null;
@@ -185,14 +169,32 @@ export default function NotesPage() {
             <div className="flex items-center gap-2 self-end sm:self-center">
               {!isChatOpen && (
                 <button onClick={() => setIsChatOpen(true)} className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700" title="AI Assistant">
-                  <Sparkles size={20} />
-                </button>
-              )}
-              <button onClick={() => downloadPdf(note)} className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700" title="Download as PDF">
-                <Download size={20} />
+                <Sparkles size={20} />
               </button>
+              )}
+              {isClient && (
+                <PDFDownloadLink
+                  document={<NotePDF note={note} />}
+                  fileName={`${note.subject || 'note'}.pdf`}
+                  className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded transition-colors duration-200"
+                >
+                  {({ blob, url, loading, error }) =>
+                    loading ? 'Loading...' : 'Download PDF'
+                  }
+                </PDFDownloadLink>
+              )}
               <button onClick={onClose} className="p-2 rounded-full hover:bg-red-500 hover:text-white">
                 <X size={20} />
+              </button>
+              <button 
+                onClick={(e) => { 
+                  e.stopPropagation(); 
+                  handleDelete(note._id); 
+                }}
+                className="p-2 rounded-full bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white transition-colors duration-200"
+                title="Delete Note"
+              >
+                <Trash2 size={20} />
               </button>
             </div>
           </div>
@@ -211,7 +213,35 @@ export default function NotesPage() {
             <div id={`pdf-text-container-${note._id}`} className={`p-6 overflow-y-auto transition-all duration-300 ${isChatOpen ? 'w-full md:w-2/5' : 'w-full md:w-3/5'}`}>
               <div className={`${paperOptions.find(p => p.value === paperStyle)?.class} h-full`}>
                 <div className={`prose ${paperStyle === 'lined' ? 'text-gray-900' : 'dark:prose-invert'} max-w-none ${fontOptions.find(f => f.value === fontStyle)?.class}`}>
-                  {renderNoteContent(note.noteContent)}
+                  <div className={`prose dark:prose-invert max-w-none ${fontStyleClass}`}>
+                  <ReactMarkdown
+                    children={note.noteContent}
+                    components={{
+                      h1: ({node, ...props}) => <h1 className="text-3xl font-bold mb-4" {...props} />,
+                      h2: ({node, ...props}) => <h2 className="text-2xl font-bold mt-6 mb-3 border-b pb-2" {...props} />,
+                      p: ({node, ...props}) => <p className="mb-4 leading-relaxed" {...props} />,
+                      ul: ({node, ...props}) => <ul className="list-disc pl-6 mb-4 space-y-2" {...props} />,
+                      ol: ({node, ...props}) => <ol className="list-decimal pl-6 mb-4 space-y-2" {...props} />,
+                      code({node, inline, className, children, ...props}) {
+                        const match = /language-(\w+)/.exec(className || '');
+                        if (className === 'language-mermaid') {
+                          return <div className="flex justify-center my-4"><Mermaid chart={String(children)} /></div>;
+                        }
+                        return !inline && match ? (
+                          <div className="bg-gray-100 dark:bg-gray-900 p-4 rounded-md my-4 overflow-x-auto">
+                            <code className={`language-${match[1]}`} {...props}>
+                              {String(children).replace(/\n$/, '')}
+                            </code>
+                          </div>
+                        ) : (
+                          <code className="bg-gray-200 dark:bg-gray-700 rounded px-1 py-0.5 text-sm" {...props}>
+                            {children}
+                          </code>
+                        );
+                      }
+                    }}
+                  />
+                </div>
                 </div>
               </div>
             </div>
@@ -336,7 +366,8 @@ export default function NotesPage() {
             {filteredNotes.map((note) => (
               <div
                 key={note._id}
-                className="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
+                className="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 relative cursor-pointer"
+                onClick={() => setSelectedNote(note)}
               >
                 {/* Note Preview */}
                 <div className="p-6">
@@ -371,6 +402,16 @@ export default function NotesPage() {
                     >
                       <Download className="w-4 h-4" />
                     </button>
+                    <button 
+                      onClick={(e) => { 
+                        e.stopPropagation(); 
+                        handleDelete(note._id); 
+                      }}
+                      className="p-2 rounded-full bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white transition-colors duration-200"
+                      title="Delete Note"
+                    >
+                      <Trash2 size={20} />
+                    </button>
                   </div>
                 </div>
               </div>
@@ -388,6 +429,7 @@ export default function NotesPage() {
             fontStyle={fontStyle}
             paperStyle={paperStyle}
             renderNoteContent={renderNoteContent}
+            fontStyleClass={fontStyleClass}
           />
         )}
       </main>

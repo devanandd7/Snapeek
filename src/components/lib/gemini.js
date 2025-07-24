@@ -64,6 +64,26 @@ Do not include any other text.`
   return { description, category, rawResponse: responseText };
 }
 
+
+// --- Refactored Study Notes Prompt ---
+const STUDY_NOTES_PROMPT_TEMPLATE = `
+Your task is to generate structured technical or academic notes designed for PDF export. When responding, follow this format strictly:
+
+1. A clear **title** for the entire note at the top, wrapped in double asterisks.
+2. Use section headings with double hashes (##) for topics, e.g., '## Key Concepts'.
+3. Use standard markdown bullet points for lists or key takeaways.
+4. Where formulas are needed, wrap them like this: [FORMULA: E = mc^2]. This is critical for rendering them correctly as images.
+5. Keep paragraphs concise and the layout clean. Avoid overly nested bullet points.
+6. If relevant, include a section titled '## Tools and Libraries' and list tools like 'react-pdf'.
+
+Your entire response must be a single string inside the 'noteContent' field of the JSON output. The response must be layout-safe and component-friendly.
+
+Respond ONLY with a valid JSON array of objects, where each object has a 'subject' (string) and a 'noteContent' (string). Do not include any other text or markdown formatting outside of the JSON.
+
+If there is only one subject, return an array with a single object.
+`;
+
+
 export async function generateStudyNotes(imageUrl, existingDescription) {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) throw new Error('GEMINI_API_KEY not set in .env.local');
@@ -76,32 +96,7 @@ export async function generateStudyNotes(imageUrl, existingDescription) {
       {
         parts: [
           {
-            text: `Analyze this image and create comprehensive study notes. ${existingDescription ? `Context: ${existingDescription}` : ''}
-
-Your task is to act as an expert educator. Analyze the provided image and generate a structured JSON array of study notes. Each object in the array should represent a distinct subject or topic found in the image.
-
-For each subject, provide detailed notes. Where a set of concepts can be visualized, generate a Mermaid 'graph TD' concept map and embed it directly within the notes using the following format:
-
-<MERMAID>
-graph TD
-    A[Concept 1] --> B[Concept 2]
-    A --> C[Concept 3]
-</MERMAID>
-
-Respond ONLY with a valid JSON array in the following format. Do not include any other text or markdown formatting.
-
-[
-  {
-    "subject": "<Subject/Topic Name 1>",
-    "noteContent": "<Detailed notes for subject 1, with Mermaid diagrams embedded where appropriate.>"
-  },
-  {
-    "subject": "<Subject/Topic Name 2>",
-    "noteContent": "<Detailed notes for subject 2, with Mermaid diagrams embedded where appropriate.>"
-  }
-]
-
-If there is only one subject, return an array with a single object.`
+            text: `Analyze this image and create comprehensive study notes. ${existingDescription ? `Context: ${existingDescription}` : ''}\n\n${STUDY_NOTES_PROMPT_TEMPLATE}`
           },
           {
             inlineData: {
@@ -137,5 +132,4 @@ If there is only one subject, return an array with a single object.`
     console.error('Failed to parse study notes as JSON:', responseText);
     return []; // Return empty array on failure
   }
-
 }

@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
+    "@react-pdf/renderer": "^4.3.0",
     "axios": "^1.10.0",
     "cloudinary": "^2.7.0",
     "cookie": "^1.0.2",
@@ -25,6 +26,7 @@
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-dropzone": "^14.3.8",
+    "react-markdown": "^10.1.0",
     "react-mermaid2": "^0.1.4"
   },
   "devDependencies": {
