@@ -34,23 +34,26 @@ export default function NoteContentRenderer({ content, showDiagrams, fontStyleCl
 
   const renderNoteContent = (text) => {
     const parts = text.split(/(<mermaid>.*?<\/mermaid>)/s);
-    return parts.map((part, index) => {
+    const elements = [];
+    
+    parts.forEach((part, index) => {
       if (part.startsWith('<mermaid>')) {
         const chart = part.substring(9, part.length - 10).trim();
         if (showDiagrams && chart.trim()) {
-          return (
-            <div key={index} className="flex justify-center my-4">
+          elements.push(
+            <div key={`mermaid-${index}`} className="flex justify-center my-4">
               <Mermaid chart={chart} />
             </div>
           );
         }
-        return null;
+      } else if (part.trim()) {
+        elements.push(
+          <ReactMarkdown key={`markdown-${index}`}>{part}</ReactMarkdown>
+        );
       }
-      if (part.trim()) {
-        return <ReactMarkdown key={index}>{part}</ReactMarkdown>;
-      }
-      return null;
     });
+    
+    return elements;
   };
 
   return (
