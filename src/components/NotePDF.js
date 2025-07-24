@@ -76,33 +76,56 @@ const styles = StyleSheet.create({
   },
 });
 
-// Helper function to parse and render content
+// Helper function to parse inline styles like **bold**
+const renderInlineText = (text, defaultStyle) => {
+  if (!text) return <Text style={defaultStyle}></Text>;
+
+  // This regex finds **bolded text** and captures the content within.
+  const parts = text.split(/(\*{2}[\s\S]*?\*{2})/g).filter(Boolean);
+
+  return parts.map((part, index) => {
+    if (part.startsWith('**') && part.endsWith('**')) {
+      const boldText = part.substring(2, part.length - 2);
+      // For bold text, we merge the default style with the bold font family.
+      return <Text key={index} style={{ ...defaultStyle, fontFamily: 'Helvetica-Bold' }}>{boldText}</Text>;
+    }
+    // For regular text, we just apply the default style.
+    return <Text key={index} style={defaultStyle}>{part}</Text>;
+  });
+};
+
+// Main parser for all content
 const renderContent = (content) => {
   if (!content) return null;
 
-  const lines = content.split('\n').filter(line => line.trim() !== '');
+  const lines = content.split('\n');
   const elements = [];
 
   for (let i = 0; i < lines.length; i++) {
-    const line = lines[i].trim();
+    let line = lines[i];
     const key = `line-${i}`;
 
-    if (line.startsWith('**') && line.endsWith('**')) {
-      elements.push(<Text key={key} style={styles.title}>{line.substring(2, line.length - 2)}</Text>);
-    } else if (line.startsWith('## ')) {
-      elements.push(<Text key={key} style={styles.heading}>{line.substring(3)}</Text>);
-    } else if (line.startsWith('* ')) {
+    if (line.trim().startsWith('## ')) {
+      const textContent = line.trim().substring(3);
+      elements.push(<Text key={key} style={styles.heading}>{renderInlineText(textContent, { fontSize: 18, fontFamily: 'Helvetica' })}</Text>);
+    } else if (line.trim().startsWith('**') && line.trim().endsWith('**')) {
+      const textContent = line.trim().substring(2, line.trim().length - 2);
+      elements.push(<Text key={key} style={styles.title}>{textContent}</Text>);
+    } else if (line.trim().startsWith('* ')) {
+      const textContent = line.trim().substring(2);
       elements.push(
-        <View key={key} style={styles.bulletItem}>
+        <View key={key} style={styles.bulletItem} wrap={false}>
           <Text style={styles.bulletPoint}>•</Text>
-          <Text style={styles.bulletText}>{line.substring(2)}</Text>
+          <Text style={styles.bulletText}>{renderInlineText(textContent, { fontSize: 11, lineHeight: 1.6 })}</Text>
         </View>
       );
-    } else if (line.startsWith('[FORMULA:') && line.endsWith(']')) {
-      elements.push(<Text key={key} style={styles.formula}>{line.substring(9, line.length - 1).trim()}</Text>);
-    } else {
-      elements.push(<Text key={key} style={styles.paragraph}>{line}</Text>);
+    } else if (line.trim().startsWith('[FORMULA:')) {
+      const textContent = line.trim().substring(9, line.trim().length - 1);
+      elements.push(<Text key={key} style={styles.formula}>{textContent}</Text>);
+    } else if (line.trim()) { // Any other non-empty line is a paragraph
+      elements.push(<Text key={key} style={styles.paragraph}>{renderInlineText(line, { fontSize: 11, lineHeight: 1.6 })}</Text>);
     }
+    // Empty lines are ignored, creating space between paragraphs
   }
 
   return elements;

@@ -1,4 +1,12 @@
 import clientPromise from '../../components/lib/mongodb';
+import { ObjectId } from 'mongodb';
+import { v2 as cloudinary } from 'cloudinary';
+
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
 import { getSession } from '../../components/lib/session';
 
 export default async function handler(req, res) {
@@ -53,17 +61,31 @@ export default async function handler(req, res) {
 
     try {
       const db = (await clientPromise).db();
-      const result = await db.collection('notes').deleteOne({ 
-        _id: noteId, 
-        userId: session.email 
-      });
-      
-      if (result.deletedCount === 0) {
-        return res.status(404).json({ error: 'Note not found' });
+      const o_id = new ObjectId(noteId);
+
+      // First, find the note to get the image public_id
+      const noteToDelete = await db.collection('notes').findOne({ _id: o_id, userId: session.email });
+
+      if (!noteToDelete) {
+        return res.status(404).json({ error: 'Note not found or you do not have permission to delete it' });
       }
-      
-      return res.status(200).json({ message: 'Note deleted successfully' });
+
+      // If there's an image, delete it from Cloudinary
+      if (noteToDelete.public_id) {
+        await cloudinary.uploader.destroy(noteToDelete.public_id);
+      }
+
+      // Then, delete the note from the database
+      const result = await db.collection('notes').deleteOne({ _id: o_id });
+
+      if (result.deletedCount === 0) {
+        // This case should ideally not be reached due to the check above, but it's good for safety
+        return res.status(404).json({ error: 'Note not found during deletion' });
+      }
+
+      return res.status(200).json({ message: 'Note and associated image deleted successfully' });
     } catch (err) {
+      console.error('Delete note error:', err);
       return res.status(500).json({ error: 'Failed to delete note', details: err.message });
     }
   }

@@ -67,6 +67,11 @@ Do not include any other text.`
 
 // --- Refactored Study Notes Prompt ---
 const STUDY_NOTES_PROMPT_TEMPLATE = `
+Your task is to act as an expert educator and a patient teacher. Analyze the provided image deeply and generate comprehensive, 
+detailed study notes that clarify concepts thoroughly.
+ For each subject or topic,points explain it as you would to a student who is seeing it for the first time ,
+try to explain with diagram (mermaid) and 
+
 Your task is to generate structured technical or academic notes designed for PDF export. When responding, follow this format strictly:
 
 1. A clear **title** for the entire note at the top, wrapped in double asterisks.
