@@ -1,0 +1,142 @@
+===================================================
+Snapeek: Project Documentation & Interview Guide
+===================================================
+
+This document provides a comprehensive overview of the Snapeek application, intended for developer onboarding, technical reference, and interview preparation.
+
+
+--------------------------------------
+Part 1: Developer Guide
+--------------------------------------
+
+### 1.1 Project Overview
+
+Snapeek is a modern, full-stack web application designed for intelligent screenshot management. Users can upload screenshots, which are then analyzed by an AI to generate descriptive titles and content summaries. A key feature is the AI-powered "Study Notes" system, which creates detailed, structured notes from educational screenshots, complete with diagrams, PDF export functionality, and an interactive chat assistant.
+
+**Core Features:**
+- User Authentication (Register, Login, Session Management)
+- Drag-and-Drop Screenshot Upload
+- AI-Powered Image Analysis (via Google Gemini)
+- AI-Generated Study Notes with Markdown & Diagram Support
+- Interactive AI Chat for Note-Specific Q&A
+- PDF Export of Study Notes
+- Secure Image Hosting (via Cloudinary)
+- Folder-Based Organization & Dashboard
+
+### 1.2 Getting Started
+
+1.  **Clone the repository.**
+2.  **Install dependencies:** `npm install`
+3.  **Set up environment variables:** Create a `.env.local` file in the root directory and populate it with the necessary API keys and secrets:
+
+    ```
+    # MongoDB
+    MONGODB_URI=your_mongodb_connection_string
+    DB_NAME=your_database_name
+
+    # Cloudinary
+    CLOUDINARY_CLOUD_NAME=your_cloud_name
+    CLOUDINARY_API_KEY=your_api_key
+    CLOUDINARY_API_SECRET=your_api_secret
+
+    # Google Gemini AI
+    GEMINI_API_KEY=your_gemini_api_key
+
+    # JWT Secret for Authentication
+    JWT_SECRET=a_strong_random_secret_key
+
+    # Nodemailer for Contact Form (Optional)
+    EMAIL_USER=your_email_address
+    EMAIL_PASS=your_email_password
+    ```
+
+4.  **Run the development server:** `npm run dev`
+    The application will be available at `http://localhost:3000`.
+
+### 1.3 Project Structure
+
+-   `/src/pages/` - Contains all the Next.js pages, which map to URL routes.
+    -   `index.js`: Landing page.
+    -   `login.js`, `register.js`: User authentication pages.
+    -   `dashboard.js`: Main user dashboard for viewing and managing images.
+    -   `notes.js`: Page for viewing and interacting with generated study notes.
+    -   `/api/`: Contains all backend API routes.
+        -   `/auth/`: Handles login, registration, and session management.
+        -   `images.js`: Handles image upload, deletion, and retrieval.
+        -   `notes.js`: Handles note creation, retrieval, update, and deletion.
+
+-   `/src/components/` - Contains reusable React components.
+    -   `/auth/`: Components specific to authentication (e.g., `LoginForm`).
+    -   `Navbar.js`: The main navigation bar.
+    -   `NoteCard.js`, `NoteModal.js`: Components for the Notes feature.
+    -   `NotePDF.js`: React-PDF component for generating PDFs.
+    -   `ChatBox.js`: The interactive AI chat component.
+
+-   `/src/lib/` - Contains library initializations and core utility functions.
+    -   `mongodb.js`: MongoDB connection handler.
+    -   `cloudinary.js`: Cloudinary configuration and upload handler.
+    -   `gemini.js`: Google Gemini API client setup.
+    -   `auth.js`: Middleware and utility functions for handling user sessions.
+
+
+--------------------------------------
+Part 2: Technology Stack Deep Dive
+--------------------------------------
+
+### Frontend
+
+-   **Next.js (^15.3.5)**: A React framework for building full-stack web applications. It's used for its file-based routing, server-side rendering (SSR), API routes, and overall developer experience. The `--turbopack` flag is used for faster development server performance.
+-   **React (^19.0.0)**: The core UI library for building the component-based user interface.
+-   **Tailwind CSS (^4)**: A utility-first CSS framework used for rapidly styling the application without writing custom CSS. It provides a responsive and maintainable design system.
+-   **Lucide React**: A library of simply designed, beautiful icons used throughout the UI for better user experience.
+-   **React-Dropzone**: A library for creating the drag-and-drop file upload zone, simplifying the handling of file inputs.
+-   **React-Markdown**: Used to safely render markdown-formatted text from the AI into HTML in the web view, ensuring proper display of headings, lists, and bold text.
+-   **React-Mermaid2**: Renders Mermaid syntax text into diagrams (e.g., concept maps) directly in the browser. It was chosen over other libraries for its compatibility with Next.js.
+-   **@react-pdf/renderer**: A powerful library for creating PDF documents using React components. It's used for the "Download PDF" feature, allowing for complex layouts, styling, and image embedding in the exported notes.
+
+### Backend (via Next.js API Routes)
+
+-   **Node.js**: The underlying runtime environment provided by Next.js for the backend API routes.
+-   **MongoDB (mongodb package)**: The NoSQL database used to store user data, image metadata, and generated notes. Its flexible, document-based structure is ideal for this application's evolving data needs.
+-   **Next-Connect**: A middleware library for Next.js API routes, simplifying the process of handling different HTTP methods (GET, POST, DELETE) and chaining middleware functions.
+-   **Multer**: A middleware for handling `multipart/form-data`, which is primarily used for processing file uploads before they are sent to Cloudinary.
+-   **Cookie**: A library for parsing and serializing HTTP cookies, used for managing user authentication sessions.
+
+### External Services & APIs
+
+-   **Cloudinary**: A cloud-based service for image and video management. It's used to securely host all uploaded screenshots, providing reliable storage, delivery, and transformation capabilities.
+-   **Google Gemini AI (@google/generative-ai)**: The generative AI model used for analyzing images and creating detailed study notes. The Gemini Flash model is specifically used for its balance of speed and capability.
+-   **Nodemailer**: A module for sending emails from the Node.js server, used to power the contact form functionality.
+
+
+--------------------------------------
+Part 3: Interview Preparation Guide
+--------------------------------------
+
+### 3.1 Project Elevator Pitch
+
+"I developed Snapeek, a full-stack intelligent screenshot manager built with Next.js, React, and MongoDB. It's not just a storage tool; it uses the Google Gemini AI to analyze uploaded images and automatically generate titles and descriptions. The standout feature is a 'Study Notes' system where the AI creates detailed, structured notes from educational content in screenshots, complete with diagrams and an interactive chat assistant. The entire application is designed to be a seamless and productive learning companion, with features like secure Cloudinary image hosting, PDF export for notes, and a responsive, dark-mode-enabled UI built with Tailwind CSS."
+
+### 3.2 Potential Interview Questions & Answers
+
+*(As an interviewer, here's what I would ask about this project.)*
+
+**Q1: Can you walk me through the architecture of the Snapeek application?**
+
+*A:* "Certainly. Snapeek is a monolithic full-stack application built on the Next.js framework. The frontend is built with React and styled with Tailwind CSS. The backend logic is handled through Next.js API routes, which run in a Node.js environment. For data persistence, we use MongoDB Atlas, a NoSQL database, to store user information and note content. Image files are not stored in the database; instead, they are uploaded to Cloudinary, and only the secure URL is stored in MongoDB. The core AI functionality is powered by the Google Gemini API, which we call from our backend to analyze images and generate text. Authentication is handled via JWTs stored in HTTP-only cookies for security."
+
+**Q2: What was the most technically challenging feature to implement and why?**
+
+*A:* "The most challenging feature was the AI-powered note generation and its subsequent PDF export. The first challenge was prompt engineering for the Gemini API—getting it to produce consistently structured, detailed, and layout-friendly markdown was an iterative process. The second, and more complex, challenge was rendering this dynamic content into a PDF. We initially used `jsPDF`, but it struggled with complex layouts and markdown parsing. We pivoted to `@react-pdf/renderer`, which was a much better solution as it allowed us to define the PDF structure using React components. This involved creating a custom parser to convert our markdown-like syntax (e.g., for headings, lists, bold text) into the corresponding `<Text>`, `<View>`, and `<Image>` components for the PDF, ensuring a clean and professional output."
+
+**Q3: How did you handle user authentication and session management? What security considerations did you take into account?**
+
+*A:* "Authentication is built from scratch using a token-based strategy. When a user logs in, the server validates their credentials and generates a JSON Web Token (JWT) containing their user ID. This JWT is then sent to the client and stored in an HTTP-only cookie. Using an HTTP-only cookie prevents client-side JavaScript from accessing it, which mitigates XSS attacks. For subsequent requests, a middleware on the API routes verifies this JWT to authenticate the user. While passwords are currently stored in plain text for this demo project, in a production environment, I would use a library like `bcrypt` to hash and salt passwords before storing them in the database."
+
+**Q4: Why did you choose a NoSQL database like MongoDB over a traditional SQL database?**
+
+*A:* "MongoDB was chosen for its flexibility and scalability, which is well-suited for this application. The structure of our data, particularly the AI-generated notes, can vary significantly. A note might have sections, lists, formulas, and embedded diagrams. A schema-less NoSQL database allows us to store this varied, nested data within a single document without a rigid structure. This is much more natural than trying to normalize this data across multiple tables in a relational SQL database. It also simplifies development, as the data structure in the database can closely mirror the JavaScript objects used in the application."
+
+**Q5: The Notes page was initially slow to load. How did you diagnose and fix this performance issue?**
+
+*A:* "The initial user feedback was that the Notes page felt sluggish. The root cause was that the user saw a blank page or a simple 'Loading...' text while the data was being fetched from the backend. This is a poor user experience. To fix this, I implemented a 'skeleton loader'. When the page loads, instead of a blank screen, it immediately displays a grid of greyed-out, mock-up note cards. This provides an immediate visual response, giving the illusion of speed and showing the user what the page layout will look like. Once the actual note data arrives from the API, the skeleton cards are seamlessly replaced with the real content. This technique significantly improves the *perceived performance* without changing the actual data-fetching time."
