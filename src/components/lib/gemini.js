@@ -70,20 +70,25 @@ const STUDY_NOTES_PROMPT_TEMPLATE = `
 Your task is to act as an expert educator and a patient teacher. Analyze the provided image deeply and generate comprehensive, detailed study notes that clarify concepts thoroughly.
 
 For each subject or topic, explain it as you would to a student who is seeing it for the first time. When appropriate, include Mermaid diagrams to visualize concepts.
-
+and  Recap of Previous Topics (from the root topic to the current one), so learners understand the connection and don't get lost. Mention types and subtypes if they were part of previous content.
 Follow this format strictly:
 
 1. A clear **title** for the entire note at the top, wrapped in double asterisks.
 2. Use section headings with double hashes (##) for topics, e.g., '## Key Concepts'.
-3. Use standard markdown bullet points for lists or key takeaways.
-4. Where formulas are needed, wrap them like this: [FORMULA: E = mc^2]. This is critical for rendering them correctly.
-5. For diagrams, use Mermaid syntax wrapped in code blocks like this:
+3. Use horizontal lines (---) to separate major sections and create visual partitions.
+4. Use color coding with HTML spans for better readability:
+   - <span style="color: #dc2626; font-weight: bold;">Important concepts, warnings, or critical points</span>
+   - <span style="color: #059669; font-weight: bold;">Definitions, key terms, or positive outcomes</span>
+   - <span style="color: #d97706; font-weight: bold;">Examples, tips, or noteworthy information</span>
+5. Use standard markdown bullet points for lists or key takeaways.
+6. Where formulas are needed, wrap them like this: [FORMULA: E = mc^2]. This is critical for rendering them correctly.
+7. For diagrams, use Mermaid syntax wrapped in code blocks like this:
    \`\`\`mermaid
    graph TD;
    A --> B;
    \`\`\`
-6. Keep paragraphs concise and the layout clean. Avoid overly nested bullet points.
-7. If relevant, include a section titled '## Tools and Libraries' and list relevant tools.
+8. Keep paragraphs concise and the layout clean. Avoid overly nested bullet points.
+9. If relevant, include a section titled '## Tools and Libraries' and list relevant tools.
 
 Your entire response must be a single string inside the 'noteContent' field of the JSON output. The response must be layout-safe and component-friendly.
 
@@ -92,7 +97,7 @@ Respond ONLY with a valid JSON array of objects, where each object has a 'subjec
 If there is only one subject, return an array with a single object.
 
 Example response format:
-[{"subject": "Mathematics", "noteContent": "**Linear Equations**\\n\\n## Key Concepts\\n\\n- A linear equation represents a straight line\\n- General form: y = mx + b\\n\\n\`\`\`mermaid\\ngraph LR;\\nA[Input x] --> B[multiply by m];\\nB --> C[add b];\\nC --> D[Output y];\\n\`\`\`\\n\\n## Applications\\n\\n- Used in physics for motion\\n- Economics for cost analysis"}]
+[{"subject": "Mathematics", "noteContent": "**Linear Equations**\\n\\n---\\n\\n## Key Concepts\\n\\n- <span style=\"color: #059669; font-weight: bold;\">Linear equation</span>: A mathematical equation that represents a straight line\\n- <span style=\"color: #dc2626; font-weight: bold;\">General form</span>: y = mx + b\\n- <span style=\"color: #d97706; font-weight: bold;\">Example</span>: y = 2x + 3 (slope = 2, y-intercept = 3)\\n\\n\`\`\`mermaid\\ngraph LR;\\nA[Input x] --> B[multiply by m];\\nB --> C[add b];\\nC --> D[Output y];\\n\`\`\`\\n\\n---\\n\\n## Applications\\n\\n- <span style=\"color: #059669; font-weight: bold;\">Physics</span>: Used for motion equations\\n- <span style=\"color: #059669; font-weight: bold;\">Economics</span>: Cost analysis and profit calculations"}]
 `;
 
 

@@ -139,20 +139,49 @@ export default function DashboardPage() {
           <nav>
             <ul>
               {folders.map(folder => (
-                <li key={folder} className="mb-2">
-                  <button
-                    onClick={() => setSelectedFolder(folder)}
-                    className={`w-full text-left py-2 px-4 rounded-lg transition-all duration-200
-                      ${selectedFolder === folder
-                        ? 'bg-blue-600 text-white shadow-md hover:bg-blue-700'
-                        : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600'
-                      }
-                    `}
-                  >
-                    {folder}
-                  </button>
-                </li>
-              ))}
+  <li key={folder} className="mb-2 flex items-center group">
+    <button
+      onClick={() => setSelectedFolder(folder)}
+      className={`flex-1 text-left py-2 px-4 rounded-lg transition-all duration-200
+        ${selectedFolder === folder
+          ? 'bg-blue-600 text-white shadow-md hover:bg-blue-700'
+          : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600'
+        }
+      `}
+    >
+      {folder}
+    </button>
+    {folder !== 'All Images' && (
+      <button
+        className="ml-2 p-1 rounded hover:bg-red-100 dark:hover:bg-red-800 text-red-600 hover:text-red-800 transition-colors opacity-60 group-hover:opacity-100"
+        title={`Delete folder '${folder}'`}
+        onClick={async (e) => {
+          e.stopPropagation();
+          if (!window.confirm(`Are you sure you want to delete the folder '${folder}' and all its images? This cannot be undone.`)) return;
+          try {
+            const res = await fetch('/api/folders', {
+              method: 'DELETE',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ folder }),
+            });
+            const data = await res.json();
+            if (res.ok) {
+              setImages(prev => prev.filter(img => (img.folder || 'Uncategorized') !== folder));
+              showMessage(`Folder '${folder}' deleted successfully!`, 'success');
+              setSelectedFolder('All Images');
+            } else {
+              showMessage(data.error || 'Failed to delete folder', 'error');
+            }
+          } catch (err) {
+            showMessage('Network error during folder delete.', 'error');
+          }
+        }}
+      >
+        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
+      </button>
+    )}
+  </li>
+))}
             </ul>
           </nav>
         </aside>

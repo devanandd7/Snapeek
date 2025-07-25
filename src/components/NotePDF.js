@@ -65,6 +65,21 @@ const styles = StyleSheet.create({
     marginVertical: 10,
     borderRadius: 5,
   },
+  importantText: {
+    fontSize: 11,
+    fontFamily: 'Helvetica-Bold',
+    color: '#dc2626', // Red for important concepts
+  },
+  definitionText: {
+    fontSize: 11,
+    fontFamily: 'Helvetica-Bold',
+    color: '#059669', // Green for definitions
+  },
+  exampleText: {
+    fontSize: 11,
+    fontFamily: 'Helvetica-Bold',
+    color: '#d97706', // Orange for examples
+  },
   pageNumber: {
     position: 'absolute',
     fontSize: 10,
@@ -76,10 +91,63 @@ const styles = StyleSheet.create({
   },
 });
 
-// Helper function to parse inline styles like **bold**
+// Helper function to parse inline styles like **bold** and HTML color spans
 const renderInlineText = (text, defaultStyle) => {
   if (!text) return <Text style={defaultStyle}></Text>;
 
+  // First, handle HTML span tags with color styles
+  let processedText = text;
+  const elements = [];
+  
+  // Split by HTML span tags
+  const spanRegex = /<span style="color: #([^;]+); font-weight: bold;">([^<]+)<\/span>/g;
+  let lastIndex = 0;
+  let match;
+  
+  while ((match = spanRegex.exec(text)) !== null) {
+    // Add text before the span
+    if (match.index > lastIndex) {
+      const beforeText = text.substring(lastIndex, match.index);
+      if (beforeText.trim()) {
+        elements.push(...parseMarkdownText(beforeText, defaultStyle));
+      }
+    }
+    
+    // Add the colored span content with appropriate PDF styling
+    const colorCode = match[1];
+    const spanContent = match[2];
+    let spanStyle = { ...defaultStyle, fontFamily: 'Helvetica-Bold' };
+    
+    if (colorCode === 'dc2626') {
+      spanStyle = { ...spanStyle, color: '#dc2626' }; // Red for important
+    } else if (colorCode === '059669') {
+      spanStyle = { ...spanStyle, color: '#059669' }; // Green for definitions
+    } else if (colorCode === 'd97706') {
+      spanStyle = { ...spanStyle, color: '#d97706' }; // Orange for examples
+    }
+    
+    elements.push(<Text key={`span-${match.index}`} style={spanStyle}>{spanContent}</Text>);
+    lastIndex = spanRegex.lastIndex;
+  }
+  
+  // Add remaining text after last span
+  if (lastIndex < text.length) {
+    const remainingText = text.substring(lastIndex);
+    if (remainingText.trim()) {
+      elements.push(...parseMarkdownText(remainingText, defaultStyle));
+    }
+  }
+  
+  // If no spans were found, just parse markdown
+  if (elements.length === 0) {
+    return parseMarkdownText(text, defaultStyle);
+  }
+  
+  return elements;
+};
+
+// Helper function to parse **bold** markdown
+const parseMarkdownText = (text, defaultStyle) => {
   // This regex finds **bolded text** and captures the content within.
   const parts = text.split(/(\*{2}[\s\S]*?\*{2})/g).filter(Boolean);
 
@@ -105,7 +173,10 @@ const renderContent = (content) => {
     let line = lines[i];
     const key = `line-${i}`;
 
-    if (line.trim().startsWith('## ')) {
+    // Skip horizontal lines
+    if (line.trim() === '---') {
+      elements.push(<View key={key} style={{ borderBottomWidth: 1, borderBottomColor: '#cccccc', marginVertical: 10 }} />);
+    } else if (line.trim().startsWith('## ')) {
       const textContent = line.trim().substring(3);
       elements.push(<Text key={key} style={styles.heading}>{renderInlineText(textContent, { fontSize: 18, fontFamily: 'Helvetica' })}</Text>);
     } else if (line.trim().startsWith('**') && line.trim().endsWith('**')) {
