@@ -19,6 +19,7 @@
     "html2canvas-pro": "^1.5.11",
     "jspdf": "^3.0.1",
     "lucide-react": "^0.525.0",
+    "mermaid": "^11.9.0",
     "mongodb": "^6.17.0",
     "multer": "^2.0.1",
     "next": "15.3.5",

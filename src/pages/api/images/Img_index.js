@@ -83,13 +83,19 @@ export default async function handler(req, res) {
       // 4. Generate study notes if requested
       let studyNotes = null;
       if (makeNotesForStudy) {
+        console.log('makeNotesForStudy is true, generating study notes...');
         try {
+          console.log('Calling generateStudyNotes with URL:', finalUrl, 'and description:', description);
           const notesResult = await generateStudyNotes(finalUrl, description);
+          console.log('Study notes generation result:', notesResult);
           studyNotes = notesResult;
         } catch (e) {
           console.error('Notes generation error:', e);
+          console.error('Error stack:', e.stack);
           // Continue without notes if generation fails
         }
+      } else {
+        console.log('makeNotesForStudy is false, skipping notes generation');
       }
 
       // 5. Save metadata to MongoDB
@@ -106,6 +112,7 @@ export default async function handler(req, res) {
 
       // 6. Save study notes if generated
       if (Array.isArray(studyNotes) && studyNotes.length > 0 && makeNotesForStudy) {
+        console.log('Saving', studyNotes.length, 'study notes to database...');
         const notesToInsert = studyNotes.map(note => ({
           userId: session.email,
           imageId: imageDoc._id,
@@ -116,9 +123,14 @@ export default async function handler(req, res) {
           createdAt: new Date(),
           lastModified: new Date()
         }));
-        await db.collection('notes').insertMany(notesToInsert);
+        console.log('Notes to insert:', JSON.stringify(notesToInsert, null, 2));
+        const insertResult = await db.collection('notes').insertMany(notesToInsert);
+        console.log('Notes insertion result:', insertResult);
+      } else {
+        console.log('No study notes to save. studyNotes:', studyNotes, 'makeNotesForStudy:', makeNotesForStudy);
       }
 
+      console.log('Upload complete. Returning response with image and studyNotes:', !!studyNotes);
       return res.status(201).json({ image: imageDoc, studyNotes });
     } catch (err) {
       return res.status(500).json({ error: 'Cloudinary upload failed', details: err.message });

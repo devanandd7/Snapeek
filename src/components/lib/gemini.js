@@ -65,76 +65,120 @@ Do not include any other text.`
 }
 
 
-// --- Refactored Study Notes Prompt ---
+// --- Fixed Study Notes Prompt ---
 const STUDY_NOTES_PROMPT_TEMPLATE = `
-Your task is to act as an expert educator and a patient teacher. Analyze the provided image deeply and generate comprehensive, 
-detailed study notes that clarify concepts thoroughly.
- For each subject or topic,points explain it as you would to a student who is seeing it for the first time ,
-try to explain with diagram (mermaid) and 
+Your task is to act as an expert educator and a patient teacher. Analyze the provided image deeply and generate comprehensive, detailed study notes that clarify concepts thoroughly.
 
-Your task is to generate structured technical or academic notes designed for PDF export. When responding, follow this format strictly:
+For each subject or topic, explain it as you would to a student who is seeing it for the first time. When appropriate, include Mermaid diagrams to visualize concepts.
+
+Follow this format strictly:
 
 1. A clear **title** for the entire note at the top, wrapped in double asterisks.
 2. Use section headings with double hashes (##) for topics, e.g., '## Key Concepts'.
 3. Use standard markdown bullet points for lists or key takeaways.
-4. Where formulas are needed, wrap them like this: [FORMULA: E = mc^2]. This is critical for rendering them correctly as images.
-5. Keep paragraphs concise and the layout clean. Avoid overly nested bullet points.
-6. If relevant, include a section titled '## Tools and Libraries' and list tools like 'react-pdf'.
+4. Where formulas are needed, wrap them like this: [FORMULA: E = mc^2]. This is critical for rendering them correctly.
+5. For diagrams, use Mermaid syntax wrapped in code blocks like this:
+   \`\`\`mermaid
+   graph TD;
+   A --> B;
+   \`\`\`
+6. Keep paragraphs concise and the layout clean. Avoid overly nested bullet points.
+7. If relevant, include a section titled '## Tools and Libraries' and list relevant tools.
 
 Your entire response must be a single string inside the 'noteContent' field of the JSON output. The response must be layout-safe and component-friendly.
 
 Respond ONLY with a valid JSON array of objects, where each object has a 'subject' (string) and a 'noteContent' (string). Do not include any other text or markdown formatting outside of the JSON.
 
 If there is only one subject, return an array with a single object.
+
+Example response format:
+[{"subject": "Mathematics", "noteContent": "**Linear Equations**\\n\\n## Key Concepts\\n\\n- A linear equation represents a straight line\\n- General form: y = mx + b\\n\\n\`\`\`mermaid\\ngraph LR;\\nA[Input x] --> B[multiply by m];\\nB --> C[add b];\\nC --> D[Output y];\\n\`\`\`\\n\\n## Applications\\n\\n- Used in physics for motion\\n- Economics for cost analysis"}]
 `;
 
 
 export async function generateStudyNotes(imageUrl, existingDescription) {
   const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) throw new Error('GEMINI_API_KEY not set in .env.local');
-
-  // Fetch the image and convert to base64
-  const base64Image = await fetchImageAsBase64(imageUrl);
-
-  const payload = {
-    contents: [
-      {
-        parts: [
-          {
-            text: `Analyze this image and create comprehensive study notes. ${existingDescription ? `Context: ${existingDescription}` : ''}\n\n${STUDY_NOTES_PROMPT_TEMPLATE}`
-          },
-          {
-            inlineData: {
-              mimeType: "image/jpeg",
-              data: base64Image
-            }
-          }
-        ]
-      }
-    ]
-  };
-
-  const { data } = await axios.post(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${apiKey}`,
-    payload,
-    { headers: { 'Content-Type': 'application/json' } }
-  );
-
-  let responseText = data?.candidates?.[0]?.content?.parts?.[0]?.text || '[]';
-
-  // Clean up the response to ensure it is valid JSON
-  responseText = responseText.trim();
-  if (responseText.startsWith('```json')) {
-    responseText = responseText.replace(/^```json/, '').replace(/```$/, '').trim();
-  } else if (responseText.startsWith('```')) {
-    responseText = responseText.replace(/^```/, '').replace(/```$/, '').trim();
+  if (!apiKey) {
+    console.error('GEMINI_API_KEY not set in .env.local');
+    throw new Error('GEMINI_API_KEY not set in .env.local');
   }
 
+  console.log('Starting study notes generation for:', imageUrl);
+  console.log('Existing description:', existingDescription);
+
   try {
-    const notesArray = JSON.parse(responseText);
-    return Array.isArray(notesArray) ? notesArray : [];
-  } catch (e) {
-    console.error('Failed to parse study notes as JSON:', responseText);
-    return []; // Return empty array on failure
+    // Fetch the image and convert to base64
+    const base64Image = await fetchImageAsBase64(imageUrl);
+    console.log('Image converted to base64, length:', base64Image.length);
+
+    const payload = {
+      contents: [
+        {
+          parts: [
+            {
+              text: `Analyze this image and create comprehensive study notes. ${existingDescription ? `Context: ${existingDescription}` : ''}\n\n${STUDY_NOTES_PROMPT_TEMPLATE}`
+            },
+            {
+              inlineData: {
+                mimeType: "image/jpeg",
+                data: base64Image
+              }
+            }
+          ]
+        }
+      ]
+    };
+
+    console.log('Sending request to Gemini API...');
+    const { data } = await axios.post(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${apiKey}`,
+      payload,
+      { headers: { 'Content-Type': 'application/json' } }
+    );
+
+    console.log('Gemini API response received:', JSON.stringify(data, null, 2));
+
+    let responseText = data?.candidates?.[0]?.content?.parts?.[0]?.text || '[]';
+    console.log('Raw response text:', responseText);
+
+    // Clean up the response to ensure it is valid JSON
+    responseText = responseText.trim();
+    if (responseText.startsWith('```json')) {
+      responseText = responseText.replace(/^```json/, '').replace(/```$/, '').trim();
+    } else if (responseText.startsWith('```')) {
+      responseText = responseText.replace(/^```/, '').replace(/```$/, '').trim();
+    }
+
+    console.log('Cleaned response text:', responseText);
+
+    try {
+      const notesArray = JSON.parse(responseText);
+      console.log('Parsed notes array:', notesArray);
+      
+      if (Array.isArray(notesArray) && notesArray.length > 0) {
+        console.log('Successfully generated', notesArray.length, 'study notes');
+        return notesArray;
+      } else {
+        console.warn('Notes array is empty or invalid');
+        return [];
+      }
+    } catch (parseError) {
+      console.error('Failed to parse study notes as JSON:', parseError);
+      console.error('Response text was:', responseText);
+      
+      // Try to create a fallback note from the raw response
+      if (responseText && responseText.length > 10) {
+        console.log('Creating fallback note from raw response');
+        return [{
+          subject: 'Study Notes',
+          noteContent: `**Generated Study Notes**\n\n${responseText}`
+        }];
+      }
+      
+      return []; // Return empty array on failure
+    }
+  } catch (error) {
+    console.error('Error in generateStudyNotes:', error);
+    throw error;
   }
 }
