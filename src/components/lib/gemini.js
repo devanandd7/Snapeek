@@ -21,7 +21,7 @@ export async function analyzeImageWithGemini(imageUrl) {
             text: `Analyze this image and respond ONLY with a JSON object in this format:
 {
   "category": "<one word category, e.g. coding, study, movies, food, nature, etc.>",
-  "description": "<detailed description of the image>"
+  "description": "<detailed description of the image with structured formate ,if image is not study related than give compliment and suggestion for look and style and hindi sayari , and if other than only describe the image in detail>",
 }
 Do not include any other text.`
           },
@@ -67,9 +67,11 @@ Do not include any other text.`
 
 // --- Fixed Study Notes Prompt ---
 const STUDY_NOTES_PROMPT_TEMPLATE = `
-Your task is to act as an expert educator and a patient teacher. Analyze the provided image deeply and generate comprehensive, detailed study notes that clarify concepts thoroughly.
 
-For each subject or topic, explain it as you would to a student who is seeing it for the first time. When appropriate, include Mermaid diagrams to visualize concepts.
+Your task is to act as an expert educator and a patient teacher. Analyze the provided image deeply and generate comprehensive, detailed study notes that clarify concepts thoroughly like IEEE standards research.
+
+For each subject or topic, explain it as you would to a student who is seeing it for the first time and  try to explain with the image , find the relevent image online and provide the URL of image that give clear understandin of this each topic that mension it image .
+ When appropriate, include Mermaid diagrams to visualize concepts.
 and  Recap of Previous Topics (from the root topic to the current one), so learners understand the connection and don't get lost. Mention types and subtypes if they were part of previous content.
 Follow this format strictly:
 

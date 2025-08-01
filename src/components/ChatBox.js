@@ -51,8 +51,8 @@ export default function ChatBox({ noteId, noteContent, onNoteUpdate, onClose }) 
 
       if (res.ok) {
         const data = await res.json();
-        onNoteUpdate(data.updatedContent);
-        // Optionally, add a system message to the chat
+        // Ensure we are passing only the string content back, not the whole object
+        onNoteUpdate(data.note.noteContent); 
         const systemMessage = { role: 'ai', content: 'I have updated the notes for you based on our conversation.' };
         setMessages(prev => [...prev, systemMessage]);
       } else {

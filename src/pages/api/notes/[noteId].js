@@ -30,17 +30,16 @@ export default async function handler(req, res) {
       let finalContent = noteContent;
 
       if (action === 'update_ai') {
-        const apiKey = process.env.GEMINI_API_KEY;
-        const formattedChat = chatHistory.map(msg => `${msg.role === 'user' ? 'User' : 'Assistant'}: ${msg.content}`).join('\n');
-        const prompt = `You are an expert editor. Your task is to revise and update the following study notes based on the provided chat conversation. Incorporate the relevant information from the chat to improve the notes. Return ONLY the full, updated note content.\n\n---ORIGINAL NOTES---\n${noteContent}\n\n---CHAT HISTORY---\n${formattedChat}\n\n---UPDATED NOTES---`;
-        
-        const payload = { contents: [{ parts: [{ text: prompt }] }] };
-        const { data } = await axios.post(
-          `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${apiKey}`,
-          payload,
-          { headers: { 'Content-Type': 'application/json' } }
-        );
-        finalContent = data?.candidates?.[0]?.content?.parts?.[0]?.text || noteContent;
+        // Filter for AI responses and format them.
+        const aiResponses = chatHistory
+          .filter(msg => msg.role === 'ai')
+          .map(msg => msg.content)
+          .join('\n\n'); // Separate responses with double newlines for clarity.
+
+        // Append the AI responses to the original note content.
+        if (aiResponses) {
+          finalContent = `${noteContent}\n\n---\n\n## AI Assistant Notes\n\n${aiResponses}`;
+        }
       }
 
       const result = await db.collection('notes').updateOne(
@@ -52,7 +51,8 @@ export default async function handler(req, res) {
         return res.status(404).json({ error: 'Note not found or you do not have permission to edit it' });
       }
 
-      return res.status(200).json({ message: 'Note updated successfully', updatedContent: finalContent });
+      const updatedNote = await db.collection('notes').findOne({ _id: new ObjectId(noteId) });
+      return res.status(200).json({ message: 'Note updated successfully', note: updatedNote });
     } catch (error) {
       console.error('Failed to update note:', error);
       return res.status(500).json({ error: 'Failed to update note' });
