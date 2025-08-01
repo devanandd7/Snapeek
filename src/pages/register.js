@@ -1,5 +1,6 @@
 
-import Navbar, { Footer } from '../components/Navbar';
+import Navbar from '../components/Navbar';
+import Footer from '../components/Footer';
 import RegisterForm from '../components/auth/RegisterForm';
 import { useState } from 'react';
 import { useRouter } from 'next/router';
