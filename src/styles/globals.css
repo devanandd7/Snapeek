@@ -3,6 +3,7 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  
 }
 
 @theme inline {
@@ -19,12 +20,12 @@
   }
 }
 
-body {
-  @apply bg-gradient-to-br from-blue-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 text-gray-900 dark:text-white;
-  min-height: 100vh;
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
 }
 
-/* Ensure html also stretches full height for background */
-html {
-  min-height: 100%;
+body {
+  @apply bg-gradient-to-br from-blue-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 text-gray-900 dark:text-white;
 }
