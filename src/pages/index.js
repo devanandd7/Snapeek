@@ -32,23 +32,8 @@ export default function Home() {
       <Navbar />
       
       <div className="min-h-screen font-inter relative">
-        <motion.div
-          className="absolute inset-0"
-          animate={{
-            background: [
-              "linear-gradient(to bottom right, #004b64ff, #42a5f5)",
-              // "linear-gradient(to bottom right, #42a5f5, #690179ff)",
-              // "linear-gradient(to bottom right, #690179ff, #19004eff)",
-              // "linear-gradient(to bottom right, #3900b3ff, #004b64ff)",
-            ],
-          }}
-          transition={{
-            duration: 10,
-            ease: "linear",
-            repeat: Infinity,
-            repeatType: "reverse",
-          }}
-        />
+       
+      
         <main className="relative z-10">
           {/* Hero Section - Designed to be full screen */}
           <section className="min-h-screen relative flex items-center justify-center overflow-hidden">
