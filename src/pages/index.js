@@ -1,6 +1,4 @@
 import Navbar from "../components/Navbar";
-import Image from "next/image";
-import { motion } from "framer-motion";
 
 const screenshots = [
   "/file.svg",
@@ -51,60 +49,36 @@ export default function Home() {
             <div className="relative z-10 w-full">
               {/* Text content */}
               <div className="text-center">
-                <motion.h1
-                  initial={{ opacity: 0, y: -50 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5 }}
-                  className="text-6xl md:text-8xl font-extrabold text-white drop-shadow-lg"
-                >
+                <h1 className="text-6xl md:text-8xl font-extrabold text-white drop-shadow-lg">
                   Snapeek
-                </motion.h1>
-                <motion.p
-                  initial={{ opacity: 0, y: -20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: 0.2 }}
-                  className="text-xl md:text-2xl mt-4 mb-8 text-gray-200"
-                >
+                </h1>
+                <p className="text-xl md:text-2xl mt-4 mb-8 text-gray-200">
                   Your Visual Knowledge, Instantly Organized.
-                </motion.p>
+                </p>
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                  <motion.a
+                  <a
                     href="/register"
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    className="px-8 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 font-bold text-lg shadow-lg"
+                    className="bg-white text-gray-900 hover:bg-gray-100 px-8 py-3 rounded-full text-lg font-medium transition-all hover:scale-105 active:scale-95"
                   >
-                    Create Account
-                  </motion.a>
-                  <motion.button
-                    onClick={handleDemoClick}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    className="px-8 py-3 bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white rounded-xl hover:bg-gray-300 dark:hover:bg-gray-600 font-bold text-lg shadow-lg"
+                    Get Started
+                  </a>
+                  <a
+                    href="#features"
+                    className="border-2 border-white text-white hover:bg-white/10 px-8 py-3 rounded-full text-lg font-medium transition-all hover:scale-105 active:scale-95"
                   >
-                    Watch Demo
-                  </motion.button>
+                    Learn More
+                  </a>
                 </div>
               </div>
             </div>
           </section>
 
           {/* Online Website Section */}
-          <motion.section
-            initial={{ opacity: 0, y: 50 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5, delay: 0.2 }}
+          <section
             className="text-gray-600 body-font bg-blue-100 dark:bg-blue-900 shadow-lg py-16"
           >
             <div className="container mx-auto flex px-5 py-24 md:flex-row flex-col items-center">
-              <motion.div
-                initial={{ opacity: 0, x: -50 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: 0.4 }}
-                className="lg:flex-grow md:w-1/2 lg:pr-24 md:pr-16 flex flex-col md:items-start md:text-left mb-16 md:mb-0 items-center text-center"
-              >
+              <div className="lg:flex-grow md:w-1/2 lg:pr-24 md:pr-16 flex flex-col md:items-start md:text-left mb-16 md:mb-0 items-center text-center">
                 <h1 className="title-font sm:text-4xl text-3xl mb-4 font-medium text-gray-900 dark:text-white">
                   Online website
                   <br className="hidden lg:inline-block" />
@@ -124,58 +98,34 @@ export default function Home() {
                     Upload
                   </a>
                 </div>
-              </motion.div>
-              <motion.div
-                initial={{ opacity: 0, x: 50 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: 0.4 }}
-                className="lg:max-w-lg lg:w-full md:w-1/2 w-5/6"
-              >
+              </div>
+              <div className="lg:max-w-lg lg:w-full md:w-1/2 w-5/6">
                 <div className="relative w-full h-64 md:h-80">
-                  <Image
+                  <img
                     src="/Screenshot (137).png"
                     alt="Online Website Interface"
-                    className="object-cover object-center rounded"
-                    fill
+                    className="object-cover object-center rounded w-full h-full"
                   />
                 </div>
-              </motion.div>
+              </div>
             </div>
-          </motion.section>
+          </section>
 
           {/* Offline Window EXE Section */}
-          <motion.section
-            initial={{ opacity: 0, y: 50 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5, delay: 0.2 }}
+          <section
             className="text-gray-600 body-font bg-blue-100 dark:bg-blue-900 shadow-lg py-16"
           >
             <div className="container mx-auto flex px-5 py-24 md:flex-row flex-col items-center">
-              <motion.div
-                initial={{ opacity: 0, x: -50 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: 0.4 }}
-                className="lg:max-w-lg lg:w-full md:w-1/2 w-5/6 mb-10 md:mb-0"
-              >
+              <div className="lg:max-w-lg lg:w-full md:w-1/2 w-5/6 mb-10 md:mb-0">
                 <div className="relative w-full h-64 md:h-80">
-                  <Image
+                  <img
                     src="/Screenshot (135).png"
                     alt="Offline Windows App"
-                    className="object-cover object-center rounded"
-                    fill
+                    className="object-cover object-center rounded w-full h-full"
                   />
                 </div>
-              </motion.div>
-              <motion.div
-                initial={{ opacity: 0, x: 50 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: 0.4 }}
-                className="lg:flex-grow md:w-1/2 lg:pl-24 md:pl-16 flex flex-col md:items-start md:text-left items-center text-center"
-              >
+              </div>
+              <div className="lg:flex-grow md:w-1/2 lg:pl-24 md:pl-16 flex flex-col md:items-start md:text-left items-center text-center">
                 <h1 className="title-font sm:text-4xl text-3xl mb-4 font-medium text-gray-900 dark:text-white">
                   Offline Windows .exe
                   <br className="hidden lg:inline-block" />
@@ -201,29 +151,18 @@ export default function Home() {
                     Download .exe
                   </a>
                 </div>
-              </motion.div>
+              </div>
             </div>
-          </motion.section>
+          </section>
 
           {/* "About Snapeek" Section */}
-          <motion.section
-            initial={{ opacity: 0, y: 50 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-            className="w-full bg-blue-100 dark:bg-blue-900 shadow-lg py-16"
-          >
+          <section className="w-full bg-blue-100 dark:bg-blue-900 shadow-lg py-16">
             <div className="container mx-auto px-6">
               <h2 className="text-3xl font-bold mb-6 text-yellow-600 text-center">
                 What is Snapeek?
               </h2>
               <div className="grid md:grid-cols-2 gap-8 items-center">
-                <motion.div
-                  initial={{ opacity: 0, x: -50 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.5, delay: 0.4 }}
-                >
+                <div>
                   <h3 className="font-bold text-xl mb-2 text-gray-700 dark:text-gray-200">
                     The Problem: Digital Clutter & Lost Insights
                   </h3>
@@ -258,15 +197,9 @@ export default function Home() {
                       your workflow.
                     </li>
                   </ul>
-                </motion.div>
+                </div>
                 {/* Replaced Slider with a simple grid for mockups */}
-                <motion.div
-                  initial={{ opacity: 0, x: 50 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.5, delay: 0.4 }}
-                  className="grid grid-cols-2 gap-4"
-                >
+                <div className="grid grid-cols-2 gap-4">
                   {mockups.map((mockup, idx) => (
                     <div
                       key={idx}
@@ -282,20 +215,13 @@ export default function Home() {
                       </p>
                     </div>
                   ))}
-                </motion.div>
+                </div>
               </div>
             </div>
-          </motion.section>
+          </section>
 
           {/* YouTube Video Section */}
-          <motion.section
-            initial={{ opacity: 0, y: 50 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-            id="youtube-demo"
-            className="w-full bg-blue-100 dark:bg-blue-900 shadow-lg py-16"
-          >
+          <section id="youtube-demo" className="w-full bg-blue-100 dark:bg-blue-900 shadow-lg py-16">
             <div className="container mx-auto px-6">
               <h2 className="text-3xl font-bold mb-6 text-blue-600 text-center">
                 See Snapeek in Action
@@ -316,42 +242,24 @@ export default function Home() {
                 ></iframe>
               </div>
             </div>
-          </motion.section>
+          </section>
 
           {/* "The Snapeek Advantage" Section */}
-          <motion.section
-            initial={{ opacity: 0, y: 50 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-            className="w-full bg-blue-600 text-white shadow-lg py-16"
-          >
+          <section className="w-full bg-blue-600 text-white shadow-lg py-16">
             <div className="container mx-auto px-6">
               <h2 className="text-3xl font-bold mb-6 text-center">
                 The Snapeek Advantage: Web + Desktop Synergy
               </h2>
               <div className="grid md:grid-cols-2 gap-8 text-center">
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  whileInView={{ opacity: 1, scale: 1 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.5, delay: 0.4 }}
-                  className="bg-blue-700 p-6 rounded-lg"
-                >
+                <div className="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
                   <h3 className="font-bold text-xl mb-2">Web Application</h3>
                   <p>
                     Conveniently upload images and get instant AI-powered notes
                     from anywhere with an internet connection. Perfect for quick
                     captures and on-the-go processing.
                   </p>
-                </motion.div>
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  whileInView={{ opacity: 1, scale: 1 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.5, delay: 0.4 }}
-                  className="bg-blue-700 p-6 rounded-lg flex flex-col items-center"
-                >
+                </div>
+                <div className="bg-blue-700 p-6 rounded-lg flex flex-col items-center">
                   {/* Using one of the provided images for the desktop app visual */}
                   <img
                     src="/image.png"
@@ -366,19 +274,13 @@ export default function Home() {
                     offline**. With Snapeek's desktop app, you maintain full
                     control over your data and enjoy an uninterrupted workflow.
                   </p>
-                </motion.div>
+                </div>
               </div>
             </div>
-          </motion.section>
+          </section>
 
           {/* Call to Action */}
-          <motion.section
-            initial={{ opacity: 0, y: 50 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-            className="w-full flex flex-col items-center py-16 text-center"
-          >
+          <section className="w-full flex flex-col items-center py-16 text-center">
             <div className="container mx-auto px-6 flex flex-col items-center">
               <h2 className="text-3xl font-bold mb-4 text-white dark:text-white">
                 Ready to Take Control of Your Visual Notes?
@@ -395,7 +297,7 @@ export default function Home() {
                 Download Now
               </a>
             </div>
-          </motion.section>
+          </section>
         </main>
       </div>
     </>
