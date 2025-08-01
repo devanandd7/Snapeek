@@ -1,5 +1,4 @@
 import Navbar from '../components/Navbar';
-import Footer from '../components/Footer';
 import { useState } from 'react';
 import Link from 'next/link';
 
@@ -91,7 +90,7 @@ export default function ContactPage() {
           </div>
         </div>
       </main>
-      <Footer />
+     
     </div>
   );
-}
+} 
